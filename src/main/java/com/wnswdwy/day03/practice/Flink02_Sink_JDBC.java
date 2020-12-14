@@ -43,7 +43,7 @@ public class Flink02_Sink_JDBC {
             //声明连接
             connection = DriverManager.getConnection("jdbc:mysql://hadoop102:3306/student","root","123456");
             //声明预编译语句
-            preparedStatement = connection.prepareStatement("insert into senor(id,temp) values(?,?) on duplicate Key undate temp =?;");
+            preparedStatement = connection.prepareStatement("insert into senor(id,temp) values(?,?) on duplicate Key update temp =?;");
         }
 
         @Override

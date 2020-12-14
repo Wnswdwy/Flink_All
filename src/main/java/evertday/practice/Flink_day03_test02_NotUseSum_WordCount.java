@@ -16,7 +16,7 @@ import org.apache.flink.util.Collector;
  *
  * 2.不使用"sum"来实现Flink中流式WordCount。
  */
-public class Flink_NotUseSum_WordCount {
+public class Flink_day03_test02_NotUseSum_WordCount {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);

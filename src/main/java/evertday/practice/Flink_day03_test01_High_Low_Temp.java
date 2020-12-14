@@ -16,7 +16,7 @@ import java.util.Collections;
  * @author yycstart
  * @create 2020-12-12 8:37
  */
-public class Flink_High_Low_Temp {
+public class Flink_day03_test01_High_Low_Temp {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);

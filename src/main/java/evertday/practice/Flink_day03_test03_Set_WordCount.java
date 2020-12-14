@@ -13,7 +13,7 @@ import java.util.HashSet;
  * @author yycstart
  * @create 2020-12-12 9:23
  */
-public class Flink_Set_WordCount {
+public class Flink_day03_test03_Set_WordCount {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);
