@@ -38,6 +38,7 @@ public class Flink_12_1_State_ProcessAPI_TempDiff {
         KeyedStream<SensorReading, Tuple> keyedStream = mapResult.keyBy("id");
 
         keyedStream.map(new MyTempDiffFunc(10.0));
+
         env.execute();
     }
 
@@ -53,7 +54,7 @@ public class Flink_12_1_State_ProcessAPI_TempDiff {
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
-            valueState = getRuntimeContext().getState(new ValueStateDescriptor<Double>("Temp-Fiff", Double.class));
+            valueState = getRuntimeContext().getState(new ValueStateDescriptor<Double>("Temp-Diff", Double.class));
 
         }
 
@@ -65,7 +66,7 @@ public class Flink_12_1_State_ProcessAPI_TempDiff {
             valueState.update(value.getTemp());
             //判断
             if(!(lastTemp == null) && (Math.abs(lastTemp - value.getTemp()) > maxDiff ) ){
-                System.out.println("两次温度差已经达到"+ maxDiff+ "度");
+                return "两次温度差已经达到"+ maxDiff+ "度";
             }
                 valueState.update(value.getTemp());
 

@@ -64,13 +64,13 @@ public class Flink_12_2_FlatMap_State_ProcessAPI_TempDiff {
             Double lastValue = valueState.value();
             value.getId();
             //更新
-//            valueState.update(value.getTemp());
+            valueState.update(value.getTemp());
             //判断
-            if(! (valueState == null )&& Math.abs(lastValue - value.getTemp()) > 10.0){
+            if(! (valueState == null )&& (Math.abs(lastValue - value.getTemp()) > 10.0)){
                 out.collect("两次温度差已经达到"+maxDiff+"度");
             }
-            valueState.update(value.getTemp());
-            out.collect("");
+
+
         }
     }
 }
