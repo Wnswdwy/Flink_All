@@ -1,14 +1,9 @@
-package evertday.practice;
-
+package evertday.practice.myself;
 import bean.SensorReading;
-import com.wnswdwy.day05.teacher.Flink01_State_OnTimer_TempNotDesc;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.java.tuple.Tuple;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -16,11 +11,17 @@ import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.functions.RichProcessFunction;
+import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.Properties;
 
 /*
@@ -67,9 +68,14 @@ public class Flink_day06_Test02_KafkaToMySQL {
         //s4.使用ProcessAPI实现10秒温度没有下降则报警逻辑
         SingleOutputStreamOperator<String> process = keyedStream.process(new MyKeyedProcessFunc(10));
 
+        DataStream<String> outPut = process.getSideOutput(new OutputTag<String>("Error"){});
         //5. 将主流和侧输出写入MySQL
-        DataStream<String> sideOutput = process.getSideOutput(new OutputTag<String>("Error") {
-        });
+        process.addSink(new MyJdbcSink("insert into mainOut(id,ts) values(?,?) on ON DUPLICATE KEY UPDATE ct=?;",3));
+        outPut.addSink(new MyJdbcSink("insert into error(err)values(?)",1 ));
+
+        //6.打印测试
+        process.print("Main");
+        outPut.print("OutPut");
 
         env.execute();
     }
@@ -117,6 +123,46 @@ public class Flink_day06_Test02_KafkaToMySQL {
         public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
             ctx.output(new OutputTag<String>("Error"){},ctx.getCurrentKey()+"在"+timestamp+"温度已经连续"+diffTemp+"没有下降了");
             tsState.clear();
+        }
+    }
+    public static class MyJdbcSink extends RichSinkFunction<String> {
+        private String sql;
+        private int number;
+
+        public MyJdbcSink(String sql, int number) {
+            this.sql = sql;
+            this.number = number;
+        }
+
+        Connection connection;
+        PreparedStatement preparedStatement;
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            connection = DriverManager.getConnection("jdbc:mysql://hadoop102:3306/jdbc", "root", "123456");
+            preparedStatement  = connection.prepareStatement(sql);
+        }
+
+        @Override
+        public void invoke(String value, Context context) throws Exception {
+            //将传入的数据进行处理
+            String[] fields = value.split(",");
+            //给预编译赋值
+            for (Integer i = 0; i < number; i++) {
+
+                if(i == 2){
+                    preparedStatement.setObject(i + 1, fields[i-1]);
+                }else {
+                    preparedStatement.setObject(i + 1, fields[i]);
+                }
+            }
+            preparedStatement.execute();
+        }
+
+        @Override
+        public void close() throws Exception {
+            super.close();
+            preparedStatement.close();
+            connection.close();
         }
     }
 }

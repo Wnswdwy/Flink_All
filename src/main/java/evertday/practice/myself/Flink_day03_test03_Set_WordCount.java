@@ -1,4 +1,4 @@
-package evertday.practice;
+package evertday.practice.myself;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;

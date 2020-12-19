@@ -21,6 +21,8 @@ public class Flink_test_batch {
         UnsortedGrouping<Tuple2<String, Integer>> groupByKeyResult = flatMapResult.groupBy(0);
         AggregateOperator<Tuple2<String, Integer>> sumResult = groupByKeyResult.sum(1);
         sumResult.print();
+
+
     }
     public static class MyFunctionFlatMap implements FlatMapFunction<String, Tuple2<String,Integer>>{
 

@@ -1,0 +1,6 @@
+输入数据如下:
+hello,atguigu,hello
+hello,spark
+hello,flink
+
+使用FlinkSQL实现从Kafka读取数据计算WordCount并将数据写入ES中
